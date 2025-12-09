@@ -103,6 +103,13 @@
             font-size: 12px;
         }
         
+        .last-updated {
+            text-align: center;
+            margin-top: 10px;
+            color: #999;
+            font-size: 11px;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -125,7 +132,8 @@
         <div id="content">
             <div class="loading">Loading standings...</div>
         </div>
-        <p class="refresh-info">Page refreshes automatically to show latest results</p>
+        <p class="refresh-info">Refresh the page to see the latest results from the API</p>
+        <p class="last-updated" id="lastUpdated"></p>
     </div>
 
     <script>
@@ -148,6 +156,9 @@
             "Mohanna AlMesaileet": ["FC Barcelona","FC Bayern München","Liverpool FC","Paris Saint-Germain FC","Real Madrid CF","Manchester City FC","FC Internazionale Milano","Arsenal FC","Club Atlético de Madrid","SSC Napoli","Juventus FC","Chelsea FC","Tottenham Hotspur FC","Bayer 04 Leverkusen","Sport Lisboa e Benfica","Borussia Dortmund","Galatasaray SK","Newcastle United FC","Athletic Club","Sporting Clube de Portugal","Olympique de Marseille","AFC Ajax","AS Monaco FC","PAE Olympiakos SFP","Atalanta BC","Eintracht Frankfurt","PSV","Villarreal CF","FK Bodø/Glimt","Club Brugge KV","SK Slavia Praha","FC København","Royale Union Saint-Gilloise","Qarabağ Ağdam FK","Paphos FC","FK Kairat"]
         };
 
+        // NOTE: This API token is for a free, read-only public API and is safe to expose client-side.
+        // It has rate limits and no write permissions. For production with sensitive APIs,
+        // use a backend proxy to protect credentials.
         const API_TOKEN = '01a2fc8b129f46c4978784cca0c54421';
         const API_URL = 'https://api.football-data.org/v4/competitions/CL/standings';
 
@@ -262,6 +273,11 @@
                 
                 const scores = calculateScores(actualStandings);
                 displayResults(scores);
+                
+                // Show last updated time
+                const now = new Date();
+                document.getElementById('lastUpdated').textContent = 
+                    `Last updated: ${now.toLocaleString()}`;
                 
             } catch (error) {
                 document.getElementById('content').innerHTML = 

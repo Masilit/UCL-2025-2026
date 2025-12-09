@@ -40,10 +40,12 @@ Once GitHub Pages is enabled, the page will be available at:
 
 ### Files
 
-- `index.html` - Main web page with embedded JavaScript
-- `Final_Predictions_standardized.CSV` - Friends' predictions data
+- `index.html` - Main web page with embedded JavaScript and predictions data
+- `Final_Predictions_standardized.CSV` - Friends' predictions data (also embedded in index.html for simplicity)
 - `Results.ipynb` - Original calculation notebook
 - `.github/workflows/pages.yml` - GitHub Pages deployment workflow
+
+**Note**: The predictions are embedded directly in the HTML file for simplicity and to avoid CORS issues when loading CSV files. The CSV file is kept for reference and potential future use.
 
 ## Local Testing
 
