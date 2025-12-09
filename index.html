@@ -161,6 +161,46 @@
         // use a backend proxy to protect credentials.
         const API_TOKEN = '01a2fc8b129f46c4978784cca0c54421';
         const API_URL = 'https://api.football-data.org/v4/competitions/CL/standings';
+        // Cached standings from Football-Data.org league phase snapshot (matchday 5 - Nov 2024)
+        const FALLBACK_CAPTURED_AT = 'matchday 5 (Nov 2024) league phase snapshot';
+        const FALLBACK_STANDINGS = [
+            "Arsenal FC",
+            "Paris Saint-Germain FC",
+            "FC Bayern München",
+            "FC Internazionale Milano",
+            "Real Madrid CF",
+            "Borussia Dortmund",
+            "Chelsea FC",
+            "Sporting Clube de Portugal",
+            "Manchester City FC",
+            "Atalanta BC",
+            "Newcastle United FC",
+            "Club Atlético de Madrid",
+            "Liverpool FC",
+            "Galatasaray SK",
+            "PSV",
+            "Tottenham Hotspur FC",
+            "Bayer 04 Leverkusen",
+            "FC Barcelona",
+            "Qarabağ Ağdam FK",
+            "SSC Napoli",
+            "Olympique de Marseille",
+            "Juventus FC",
+            "AS Monaco FC",
+            "Paphos FC",
+            "Royale Union Saint-Gilloise",
+            "Club Brugge KV",
+            "Athletic Club",
+            "Eintracht Frankfurt",
+            "FC København",
+            "Sport Lisboa e Benfica",
+            "SK Slavia Praha",
+            "FK Bodø/Glimt",
+            "PAE Olympiakos SFP",
+            "Villarreal CF",
+            "FK Kairat",
+            "AFC Ajax"
+        ];
 
         async function fetchStandings() {
             try {
@@ -253,11 +293,10 @@
         }
 
         async function init() {
+            let actualStandings = [];
+            let usedFallback = false;
             try {
                 const data = await fetchStandings();
-                
-                // Extract team names from standings
-                const actualStandings = [];
                 for (const table of data.standings || []) {
                     if (table.type === 'TOTAL' || table.type === 'LEAGUE_PHASE') {
                         for (const row of table.table) {
@@ -266,19 +305,23 @@
                         break;
                     }
                 }
-                
-                if (actualStandings.length === 0) {
-                    throw new Error('No standings data found');
-                }
-                
+            } catch (error) {
+                console.error('Falling back to cached standings:', error);
+                usedFallback = true;
+            }
+
+            if (actualStandings.length === 0) {
+                actualStandings = FALLBACK_STANDINGS.slice();
+                usedFallback = true;
+            }
+
+            try {
                 const scores = calculateScores(actualStandings);
                 displayResults(scores);
-                
-                // Show last updated time
-                const now = new Date();
-                document.getElementById('lastUpdated').textContent = 
-                    `Last updated: ${now.toLocaleString()}`;
-                
+
+                document.getElementById('lastUpdated').textContent = usedFallback
+                    ? `Showing cached standings from ${FALLBACK_CAPTURED_AT} (live API unavailable)`
+                    : `Last updated: ${new Date().toLocaleString()}`;
             } catch (error) {
                 document.getElementById('content').innerHTML = 
                     `<div class="error">Error loading standings: ${error.message}<br>Please refresh the page to try again.</div>`;
