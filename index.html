@@ -1,1 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCL 2025-2026 Standings Competition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #667eea;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 40px;
+            font-size: 16px;
+            color: #e74c3c;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+        
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .rank {
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .winner {
+            background-color: #ffd700 !important;
+        }
+        
+        .top3 {
+            background-color: #fff3cd;
+        }
+        
+        .score {
+            font-weight: bold;
+            color: #27ae60;
+        }
+        
+        .refresh-info {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏆 UCL 2025-2026 Prediction Competition 🏆</h1>
+        <p class="subtitle">Live standings updated from UEFA Champions League API</p>
+        <div id="content">
+            <div class="loading">Loading standings...</div>
+        </div>
+        <p class="refresh-info">Page refreshes automatically to show latest results</p>
+    </div>
 
+    <script>
+        // Predictions data embedded from CSV
+        const predictions = {
+            "Naser almusaileet": ["FC Barcelona","Manchester City FC","Liverpool FC","FC Bayern München","Real Madrid CF","Paris Saint-Germain FC","Arsenal FC","FC Internazionale Milano","Club Atlético de Madrid","Chelsea FC","Juventus FC","Borussia Dortmund","Bayer 04 Leverkusen","SSC Napoli","Atalanta BC","Sport Lisboa e Benfica","Newcastle United FC","Tottenham Hotspur FC","Athletic Club","Olympique de Marseille","AS Monaco FC","Eintracht Frankfurt","AFC Ajax","Villarreal CF","Sporting Clube de Portugal","PAE Olympiakos SFP","FC København","Galatasaray SK","PSV","SK Slavia Praha","Club Brugge KV","Royale Union Saint-Gilloise","Paphos FC","FK Kairat","FK Bodø/Glimt","Qarabağ Ağdam FK"],
+            "Abdullah alameerah": ["Liverpool FC","FC Barcelona","Arsenal FC","Manchester City FC","Chelsea FC","Real Madrid CF","Paris Saint-Germain FC","Club Atlético de Madrid","FC Internazionale Milano","FC Bayern München","Juventus FC","SSC Napoli","Tottenham Hotspur FC","Borussia Dortmund","Newcastle United FC","AFC Ajax","Bayer 04 Leverkusen","Sport Lisboa e Benfica","Atalanta BC","AS Monaco FC","Athletic Club","PSV","Villarreal CF","Olympique de Marseille","Club Brugge KV","Eintracht Frankfurt","FC København","FK Kairat","Galatasaray SK","Sporting Clube de Portugal","Qarabağ Ağdam FK","FK Bodø/Glimt","SK Slavia Praha","PAE Olympiakos SFP","Paphos FC","Royale Union Saint-Gilloise"],
+            "Youssef Almusailit": ["FC Barcelona","Liverpool FC","Real Madrid CF","Manchester City FC","Chelsea FC","Paris Saint-Germain FC","SSC Napoli","FC Bayern München","Club Atlético de Madrid","Athletic Club","Arsenal FC","Borussia Dortmund","AS Monaco FC","Bayer 04 Leverkusen","AFC Ajax","Atalanta BC","Club Brugge KV","Eintracht Frankfurt","Newcastle United FC","Juventus FC","Olympique de Marseille","FC Internazionale Milano","Galatasaray SK","FC København","FK Bodø/Glimt","PSV","FK Kairat","PAE Olympiakos SFP","Qarabağ Ağdam FK","Paphos FC","Sport Lisboa e Benfica","SK Slavia Praha","Sporting Clube de Portugal","Tottenham Hotspur FC","Royale Union Saint-Gilloise","Villarreal CF"],
+            "Bader alsafak": ["FC Barcelona","Arsenal FC","Real Madrid CF","Liverpool FC","Chelsea FC","SSC Napoli","Paris Saint-Germain FC","FC Bayern München","Manchester City FC","FC Internazionale Milano","Sport Lisboa e Benfica","Atalanta BC","Eintracht Frankfurt","AFC Ajax","AS Monaco FC","Borussia Dortmund","Club Atlético de Madrid","Bayer 04 Leverkusen","Tottenham Hotspur FC","Juventus FC","Newcastle United FC","Sporting Clube de Portugal","PSV","Villarreal CF","FC København","Club Brugge KV","Athletic Club","Galatasaray SK","Olympique de Marseille","PAE Olympiakos SFP","FK Bodø/Glimt","Qarabağ Ağdam FK","SK Slavia Praha","FK Kairat","Royale Union Saint-Gilloise","Paphos FC"],
+            "Naser Alghanim": ["Manchester City FC","Liverpool FC","Arsenal FC","Juventus FC","FC Bayern München","Real Madrid CF","Paris Saint-Germain FC","FC Barcelona","SSC Napoli","Tottenham Hotspur FC","Chelsea FC","Borussia Dortmund","Club Atlético de Madrid","Newcastle United FC","Athletic Club","AS Monaco FC","Eintracht Frankfurt","Atalanta BC","Bayer 04 Leverkusen","AFC Ajax","Galatasaray SK","FC Internazionale Milano","Sport Lisboa e Benfica","Sporting Clube de Portugal","PSV","Olympique de Marseille","FC København","Villarreal CF","Royale Union Saint-Gilloise","Club Brugge KV","FK Bodø/Glimt","PAE Olympiakos SFP","FK Kairat","SK Slavia Praha","Qarabağ Ağdam FK","Paphos FC"],
+            "Saad khaled": ["Liverpool FC","Real Madrid CF","FC Bayern München","Paris Saint-Germain FC","FC Barcelona","Manchester City FC","Arsenal FC","Chelsea FC","FC Internazionale Milano","SSC Napoli","Club Atlético de Madrid","Juventus FC","Newcastle United FC","Tottenham Hotspur FC","Sporting Clube de Portugal","Sport Lisboa e Benfica","Borussia Dortmund","Olympique de Marseille","Athletic Club","Atalanta BC","Galatasaray SK","Bayer 04 Leverkusen","AFC Ajax","Villarreal CF","Eintracht Frankfurt","PSV","PAE Olympiakos SFP","Royale Union Saint-Gilloise","SK Slavia Praha","Qarabağ Ağdam FK","AS Monaco FC","Club Brugge KV","FC København","FK Bodø/Glimt","FK Kairat","Paphos FC"],
+            "Bader Khalaf": ["Real Madrid CF","FC Barcelona","FC Bayern München","Juventus FC","Chelsea FC","Liverpool FC","Manchester City FC","Paris Saint-Germain FC","Arsenal FC","Tottenham Hotspur FC","Newcastle United FC","FC Internazionale Milano","Eintracht Frankfurt","Villarreal CF","FK Bodø/Glimt","AFC Ajax","Borussia Dortmund","Club Atlético de Madrid","Bayer 04 Leverkusen","AS Monaco FC","SK Slavia Praha","Sporting Clube de Portugal","SSC Napoli","PSV","PAE Olympiakos SFP","Paphos FC","Olympique de Marseille","Galatasaray SK","Sport Lisboa e Benfica","Qarabağ Ağdam FK","Atalanta BC","Royale Union Saint-Gilloise","Athletic Club","FC København","FK Kairat","Club Brugge KV"],
+            "Othman almusaileet": ["Real Madrid CF","Liverpool FC","FC Bayern München","FC Barcelona","Chelsea FC","Paris Saint-Germain FC","Arsenal FC","Club Atlético de Madrid","Manchester City FC","Juventus FC","Athletic Club","SSC Napoli","Tottenham Hotspur FC","Borussia Dortmund","Bayer 04 Leverkusen","Newcastle United FC","SK Slavia Praha","Eintracht Frankfurt","AS Monaco FC","Atalanta BC","AFC Ajax","Galatasaray SK","FC Internazionale Milano","Olympique de Marseille","PSV","PAE Olympiakos SFP","Sport Lisboa e Benfica","Villarreal CF","Club Brugge KV","FC København","Royale Union Saint-Gilloise","FK Bodø/Glimt","Paphos FC","Sporting Clube de Portugal","Qarabağ Ağdam FK","FK Kairat"],
+            "Mohammad AlMasilit": ["FC Bayern München","Manchester City FC","FC Barcelona","SSC Napoli","Liverpool FC","Juventus FC","Real Madrid CF","Chelsea FC","FC Internazionale Milano","Tottenham Hotspur FC","Club Atlético de Madrid","Arsenal FC","Paris Saint-Germain FC","Borussia Dortmund","Newcastle United FC","Atalanta BC","Villarreal CF","Sport Lisboa e Benfica","Eintracht Frankfurt","Bayer 04 Leverkusen","AFC Ajax","Athletic Club","Galatasaray SK","Olympique de Marseille","Club Brugge KV","AS Monaco FC","Sporting Clube de Portugal","PAE Olympiakos SFP","SK Slavia Praha","PSV","FC København","Royale Union Saint-Gilloise","FK Bodø/Glimt","FK Kairat","Qarabağ Ağdam FK","Paphos FC"],
+            "AlMefreh": ["Liverpool FC","Real Madrid CF","Paris Saint-Germain FC","Arsenal FC","Chelsea FC","FC Barcelona","FC Bayern München","Newcastle United FC","Borussia Dortmund","SSC Napoli","Club Atlético de Madrid","FC Internazionale Milano","Manchester City FC","Tottenham Hotspur FC","Sporting Clube de Portugal","Atalanta BC","Juventus FC","Sport Lisboa e Benfica","Club Brugge KV","Villarreal CF","AFC Ajax","Athletic Club","Bayer 04 Leverkusen","PSV","AS Monaco FC","Eintracht Frankfurt","FK Kairat","FK Bodø/Glimt","FC København","Galatasaray SK","PAE Olympiakos SFP","Paphos FC","Olympique de Marseille","SK Slavia Praha","Qarabağ Ağdam FK","Royale Union Saint-Gilloise"],
+            "Bujoda13": ["Paris Saint-Germain FC","Chelsea FC","Bayer 04 Leverkusen","Club Atlético de Madrid","FC Barcelona","Real Madrid CF","Liverpool FC","Arsenal FC","SSC Napoli","Juventus FC","Atalanta BC","Manchester City FC","FC Internazionale Milano","FC Bayern München","AFC Ajax","Sporting Clube de Portugal","Athletic Club","Borussia Dortmund","Tottenham Hotspur FC","PSV","Villarreal CF","Newcastle United FC","AS Monaco FC","Club Brugge KV","Eintracht Frankfurt","FK Bodø/Glimt","FC København","FK Kairat","Galatasaray SK","Olympique de Marseille","Sport Lisboa e Benfica","Qarabağ Ağdam FK","SK Slavia Praha","Paphos FC","Royale Union Saint-Gilloise","PAE Olympiakos SFP"],
+            "Aziz": ["Liverpool FC","Paris Saint-Germain FC","Real Madrid CF","FC Bayern München","Manchester City FC","FC Barcelona","Chelsea FC","Arsenal FC","FC Internazionale Milano","Juventus FC","Newcastle United FC","Tottenham Hotspur FC","SSC Napoli","Club Atlético de Madrid","Bayer 04 Leverkusen","Borussia Dortmund","Atalanta BC","AFC Ajax","AS Monaco FC","Olympique de Marseille","Athletic Club","Villarreal CF","Eintracht Frankfurt","Galatasaray SK","Sporting Clube de Portugal","Club Brugge KV","PSV","FK Kairat","FC København","Sport Lisboa e Benfica","FK Bodø/Glimt","Qarabağ Ağdam FK","Paphos FC","PAE Olympiakos SFP","SK Slavia Praha","Royale Union Saint-Gilloise"],
+            "Abdulhadi aljabaah": ["FC Barcelona","Paris Saint-Germain FC","FC Bayern München","Manchester City FC","Real Madrid CF","Arsenal FC","Club Atlético de Madrid","Borussia Dortmund","Liverpool FC","Chelsea FC","FC Internazionale Milano","Atalanta BC","Juventus FC","AFC Ajax","Newcastle United FC","AS Monaco FC","Athletic Club","Sport Lisboa e Benfica","Galatasaray SK","Eintracht Frankfurt","Bayer 04 Leverkusen","Tottenham Hotspur FC","Olympique de Marseille","Sporting Clube de Portugal","SSC Napoli","Royale Union Saint-Gilloise","Villarreal CF","Club Brugge KV","FC København","FK Bodø/Glimt","FK Kairat","PAE Olympiakos SFP","Paphos FC","PSV","Qarabağ Ağdam FK","SK Slavia Praha"],
+            "Ali Almusaileet": ["FC Barcelona","FC Bayern München","Liverpool FC","Real Madrid CF","Arsenal FC","Paris Saint-Germain FC","Chelsea FC","Club Atlético de Madrid","Manchester City FC","FC Internazionale Milano","Borussia Dortmund","Juventus FC","Newcastle United FC","Tottenham Hotspur FC","SSC Napoli","Villarreal CF","Bayer 04 Leverkusen","Eintracht Frankfurt","Atalanta BC","Athletic Club","Sporting Clube de Portugal","Olympique de Marseille","Sport Lisboa e Benfica","AFC Ajax","PSV","AS Monaco FC","Club Brugge KV","Galatasaray SK","SK Slavia Praha","PAE Olympiakos SFP","FC København","Qarabağ Ağdam FK","FK Bodø/Glimt","FK Kairat","Royale Union Saint-Gilloise","Paphos FC"],
+            "Mohanna AlMesaileet": ["FC Barcelona","FC Bayern München","Liverpool FC","Paris Saint-Germain FC","Real Madrid CF","Manchester City FC","FC Internazionale Milano","Arsenal FC","Club Atlético de Madrid","SSC Napoli","Juventus FC","Chelsea FC","Tottenham Hotspur FC","Bayer 04 Leverkusen","Sport Lisboa e Benfica","Borussia Dortmund","Galatasaray SK","Newcastle United FC","Athletic Club","Sporting Clube de Portugal","Olympique de Marseille","AFC Ajax","AS Monaco FC","PAE Olympiakos SFP","Atalanta BC","Eintracht Frankfurt","PSV","Villarreal CF","FK Bodø/Glimt","Club Brugge KV","SK Slavia Praha","FC København","Royale Union Saint-Gilloise","Qarabağ Ağdam FK","Paphos FC","FK Kairat"]
+        };
+
+        const API_TOKEN = '01a2fc8b129f46c4978784cca0c54421';
+        const API_URL = 'https://api.football-data.org/v4/competitions/CL/standings';
+
+        async function fetchStandings() {
+            try {
+                const response = await fetch(API_URL, {
+                    headers: {
+                        'X-Auth-Token': API_TOKEN
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error fetching standings:', error);
+                throw error;
+            }
+        }
+
+        function calculateScores(actualStandings) {
+            const actualRank = {};
+            actualStandings.forEach((team, index) => {
+                actualRank[team] = index + 1;
+            });
+
+            const scores = {};
+            
+            for (const [friend, predictedTeams] of Object.entries(predictions)) {
+                let totalScore = 0;
+                
+                predictedTeams.forEach((team, index) => {
+                    const predictedPos = index + 1;
+                    const actualPos = actualRank[team];
+                    
+                    if (!actualPos) {
+                        console.warn(`Team ${team} not found in actual standings`);
+                        return;
+                    }
+                    
+                    // Calculate base difference
+                    const diff = Math.abs(predictedPos - actualPos);
+                    
+                    // Apply bonuses
+                    let bonus = 0;
+                    if (predictedPos <= 8 && actualPos <= 8) {
+                        bonus = -3; // Correct top-8 team
+                    } else if (predictedPos <= 24 && actualPos <= 24) {
+                        bonus = -1; // Correct 9-24 team
+                    }
+                    
+                    totalScore += diff + bonus;
+                });
+                
+                scores[friend] = totalScore;
+            }
+            
+            return scores;
+        }
+
+        function displayResults(scores) {
+            // Sort by score (lowest is best)
+            const sortedScores = Object.entries(scores).sort((a, b) => a[1] - b[1]);
+            
+            let html = '<table>';
+            html += '<thead><tr><th>Rank</th><th>Name</th><th>Score</th></tr></thead>';
+            html += '<tbody>';
+            
+            sortedScores.forEach(([name, score], index) => {
+                const rank = index + 1;
+                let rowClass = '';
+                
+                if (rank === 1) {
+                    rowClass = 'winner';
+                } else if (rank <= 3) {
+                    rowClass = 'top3';
+                }
+                
+                html += `<tr class="${rowClass}">
+                    <td class="rank">${rank}</td>
+                    <td>${name}</td>
+                    <td class="score">${score}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            
+            document.getElementById('content').innerHTML = html;
+        }
+
+        async function init() {
+            try {
+                const data = await fetchStandings();
+                
+                // Extract team names from standings
+                const actualStandings = [];
+                for (const table of data.standings || []) {
+                    if (table.type === 'TOTAL' || table.type === 'LEAGUE_PHASE') {
+                        for (const row of table.table) {
+                            actualStandings.push(row.team.name);
+                        }
+                        break;
+                    }
+                }
+                
+                if (actualStandings.length === 0) {
+                    throw new Error('No standings data found');
+                }
+                
+                const scores = calculateScores(actualStandings);
+                displayResults(scores);
+                
+            } catch (error) {
+                document.getElementById('content').innerHTML = 
+                    `<div class="error">Error loading standings: ${error.message}<br>Please refresh the page to try again.</div>`;
+            }
+        }
+
+        // Initialize on page load
+        init();
+    </script>
+</body>
+</html>
